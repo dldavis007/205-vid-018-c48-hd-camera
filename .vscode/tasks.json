@@ -1,0 +1,82 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "PC_SIDE: Build & Run",
+            "type": "shell",
+            "command": "mingw32-make run",
+            "options": {
+                "cwd": "${workspaceFolder}/Rev 1.01/pc_side"
+            },
+            "group": "test",
+            "problemMatcher": [],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "dedicated"
+            },
+            "detail": "Builds and runs the PC-side host: the real firmware main() with live logging and a UDP CAN bus (Ctrl+C to quit)."
+        },
+        {
+            "label": "PC_SIDE: Build only",
+            "type": "shell",
+            "command": "mingw32-make",
+            "options": {
+                "cwd": "${workspaceFolder}/Rev 1.01/pc_side"
+            },
+            "group": "build",
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "detail": "Compiles the host build of the firmware without running it."
+        },
+        {
+            "label": "Test: All Tests",
+            "type": "shell",
+            "command": "mingw32-make all",
+            "options": {
+                "cwd": "${workspaceFolder}/Rev 1.01/tests"
+            },
+            "group": "test",
+            "problemMatcher": [],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared"
+            },
+            "detail": "Builds and runs every Unity suite."
+        },
+        {
+            "label": "PC_SIDE: Tests, Build & Run",
+            "type": "shell",
+            "command": "mingw32-make -C tests all && mingw32-make -C pc_side run",
+            "options": {
+                "cwd": "${workspaceFolder}/Rev 1.01",
+                "shell": {
+                    "executable": "cmd.exe",
+                    "args": [
+                        "/d",
+                        "/c"
+                    ]
+                }
+            },
+            "group": "test",
+            "problemMatcher": [],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "dedicated"
+            },
+            "detail": "Runs every Unity suite first; starts the PC-side host only if they all pass. One cmd && chain, because dependsOrder: sequence does not reliably stop on a failed task."
+        }
+    ]
+}

@@ -1,0 +1,40 @@
+{
+    "configurations": [
+        {
+            "name": "STM32",
+            "includePath": [
+                "${workspaceFolder}/**"
+            ],
+            "defines": [
+                "CORE_CM4",
+                "USE_HAL_DRIVER",
+                "STM32H745xx"
+            ],
+            "compilerPath": "C:/Arm GNU Toolchain arm-none-eabi/13.2 Rel1/bin/arm-none-eabi-g++.exe",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "gcc-arm",
+            "configurationProvider": "ms-vscode.cmake-tools"
+        },
+        {
+            "name": "PC_SIDE host",
+            "includePath": [
+                "${workspaceFolder}/Rev 1.01/pc_side/stubs",
+                "${workspaceFolder}/Rev 1.01/pc_side",
+                "${workspaceFolder}/Rev 1.01/CM4/Core/Inc",
+                "${workspaceFolder}/Rev 1.01/Drivers/EEPROM/Inc"
+            ],
+            "defines": [
+                "PC_SIDE"
+            ],
+            "compilerPath": "C:/TDM-GCC-64/bin/gcc.exe",
+            "compilerArgs": [
+                "-m32",
+                "-funsigned-char"
+            ],
+            "cStandard": "c11",
+            "intelliSenseMode": "windows-gcc-x86"
+        }
+    ],
+    "version": 4
+}

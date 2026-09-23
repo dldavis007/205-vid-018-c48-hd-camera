@@ -1,0 +1,10 @@
+# PC-side host build artifacts
+Rev */pc_side/build/
+Rev */pc_side/*.exe
+Rev */pc_side/*.log
+Rev */pc_side/flash_*.bin
+
+
+
+# Rev */tests/build/*
+Rev */tests/*.exe

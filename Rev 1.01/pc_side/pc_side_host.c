@@ -152,6 +152,24 @@ static void can_log(const char *dir, uint16_t id, const uint8_t *buf, int len)
                 t.wHour, t.wMinute, t.wSecond, t.wMilliseconds, dir, id, len, hex));
 }
 
+/* RX is logged only when a frame differs from the last one on its ID: the
+ * button box repeats its 0x180 word every 100 ms, so an idle bus would log
+ * nothing but "0x180 [3] 00 04 00". Tracked per ID because other frames
+ * interleave with that heartbeat. Logging only - every frame still reaches
+ * the firmware. Touched by the RX thread alone. */
+static struct { uint8_t seen, len, buf[8]; } rx_last[0x800];
+
+static int rx_is_repeat(uint16_t id, const uint8_t *buf, int len)
+{
+    id &= 0x7FF;
+    if (rx_last[id].seen && rx_last[id].len == len && !memcmp(rx_last[id].buf, buf, len))
+        return 1;
+    rx_last[id].seen = 1;
+    rx_last[id].len  = (uint8_t)len;
+    memcpy(rx_last[id].buf, buf, len);
+    return 0;
+}
+
 static DWORD WINAPI can_rx_fn(LPVOID arg)
 {
     uint8_t pkt[16];
@@ -173,7 +191,8 @@ static DWORD WINAPI can_rx_fn(LPVOID arg)
             /* The hub forwards every frame; the FDCAN filters decide. */
             if (!pc_can_filter_accept(m.id)) { can_filtered++; continue; }
 
-            can_log("RX", m.id, m.buf, m.len);
+            if (!rx_is_repeat(m.id, m.buf, m.len))
+                can_log("RX", m.id, m.buf, m.len);
 
             EnterCriticalSection(&rx_lock);
             nxt = (rx_head + 1) % RX_RING_N;

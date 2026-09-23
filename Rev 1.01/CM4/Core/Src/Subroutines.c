@@ -12,6 +12,7 @@
 
 uint16_t ran_num = 0;  //used to create unique camera address  
 uint16_t cam_add;
+// TODO Given that button box data is typically two bytes, I'm pretty sure this single byte truncates other parts of the BB data (like trigger and reset)
 uint8_t TC0_RCVD_Data;
 char Gen_Flags = 0;
 char F1_Rcvd_Data = 0;

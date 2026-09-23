@@ -89,14 +89,15 @@ test_menu: test_menu_var.exe
 # =============================================================================
 # Target: test_menu_navigation
 #
-# Compiles MenuFunctions.c against stub headers, stub CAN implementations,
-# and stub global variables.  eeprom.c is NOT compiled; EE_* functions are
-# provided by mco_stub.c with safe no-op implementations.
+# Compiles MenuFunctions.c against stub headers, stub CAN implementations and
+# menu_navigation_stub.c, which supplies the globals plus a fixture Menuc[]
+# table built for the navigation paths (see the notes in that file).
+# eeprom.c is NOT compiled; EE_* functions come from mco_stub.c.
 # =============================================================================
-MENU_PROD  := $(ROOT)/CM4/Core/Src/MenuFunctions.c
-MENU_STUBS := stubs/mco_stub.c stubs/globals_stub.c
+NAV_PROD  := $(ROOT)/CM4/Core/Src/MenuFunctions.c
+NAV_STUBS := stubs/mco_stub.c stubs/menu_navigation_stub.c
 
-test_menu_navigation.exe: $(UNITY) $(MENU_STUBS) $(MENU_PROD) test_menu_navigation.c
+test_menu_navigation.exe: $(UNITY) $(NAV_STUBS) $(NAV_PROD) test_menu_navigation.c
 	$(CC) $(CFLAGS) $(INCS) $(LDFLAGS) -o $@ $^
 
 test_menu_navigation: test_menu_navigation.exe

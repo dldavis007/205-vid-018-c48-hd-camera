@@ -6,6 +6,7 @@
 #include "MenuFunctions.h"
 #include "eeprom.h"
 #include "main.h"
+#include "canNodeIds.h"
 
 
 #define Disp_Wait_Time1  0.001
@@ -1277,4 +1278,3 @@ void clearMenu (void)
 	 	 sprintf (&Menu[i][0],"                    ");  //20 spaces
 	 }
 }
-

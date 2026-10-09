@@ -181,3 +181,29 @@ Absent/invalid records and Restore Defaults select NONE.
 
 Run `make test_trigger_pairing` in tests/ for the pairing/persistence/scan
 checks. Full Windows bench and STM32 target validation remain required.
+
+## STM32 build tasks
+
+Open the repository root in VS Code. Workspace tasks retain the labels
+Build/Clean/Rebuild Project - CM4 (and CM7), so matching task toolbar buttons
+can use them. These workspace definitions supersede same-label user tasks
+for this project; user tasks for other projects need not be changed.
+
+`scripts/build-stm32.ps1` configures before invoking the build, creates missing
+build directories, regenerates Ninja rules, and reports success only after a
+successful command. Build is incremental; Clean removes generated target
+outputs; Rebuild refreshes CMake configuration and rebuilds all targets.
+The default compiler fallback is the confirmed local installation at
+`C:\Arm GNU Toolchain arm-none-eabi\13.2 Rel1\bin`. Set `ARM_TOOLCHAIN_BIN`
+or pass `-ArmToolchainBin` to select another installation.
+
+The root CMake project defaults to CM4. Per-core presets use CM4/build/Debug
+(or the selected configuration); toolbar tasks use CM4/build in Debug mode.
+CM7 tasks deliberately fail with an explicit missing-project message because
+this repository has no CM7 firmware. CM4 performs clock initialization and
+does not wait for CM7. These build changes do not alter boot option bytes,
+CubeMX core activation, or introduce substitute CM7 firmware.
+
+Windows task execution remains to be verified on the development PC; the
+CM4 firmware itself was successfully built with ARM GCC 13.2.1 before these
+build-task changes.

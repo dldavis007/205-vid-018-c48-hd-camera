@@ -8,3 +8,11 @@ Rev */pc_side/flash_*.bin
 
 # Rev */tests/build/*
 Rev */tests/*.exe
+
+# STM32/CMake generated build directories
+Rev */CM4/build/
+Rev */CM7/build/
+Rev */build/
+
+# Test build artifacts
+Rev */tests/build/

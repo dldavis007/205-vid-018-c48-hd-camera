@@ -71,6 +71,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user sources here
 	Core/Src/Subroutines.c
+	Core/Src/canNodeIds.c
 	Core/Src/user.c 
 	Core/Src/mco.c 
 	Core/Src/mcohw.c 

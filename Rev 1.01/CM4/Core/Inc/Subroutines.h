@@ -68,4 +68,14 @@ void setOSD(enum OSDdir button);
 
 
 
+
+/* Trigger-unit pairing, shared with VID-019. */
+#include "canNodeIds.h"
+extern struct menu_var TriggerMode;
+can_unit_t trigger_menu_to_unit(void);
+int update_paired_triggerable_unit(void);
+void Save_Trigger_Mode(void);
+void Load_Trigger_Mode(void);
+int update_paired_triggerable_unit_menu_wrapper(void);
+
 #endif /* __SUBROUTINES_H */

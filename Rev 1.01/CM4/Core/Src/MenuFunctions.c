@@ -1194,6 +1194,9 @@ int RestoreDefaults(void)
     HAL_FLASH_Unlock();
     EE_WriteVariable(VirtAddVarTab[20], (EEDataTable[20] & 0xFF00) | 0x00FF);  //NullVar.str_value[0] = 0xFF
     HAL_FLASH_Lock();
+    TriggerMode.value = 5;
+    getstrval(&TriggerMode);
+    Save_Trigger_Mode();
     ResetProc();
     return 0;
 }
@@ -1277,4 +1280,14 @@ void clearMenu (void)
 	 {
 	 	 sprintf (&Menu[i][0],"                    ");  //20 spaces
 	 }
+}
+
+int update_paired_triggerable_unit_menu_wrapper(void)
+{
+    StdVarFunction();
+    if (!Variable_flag) {
+        Save_Trigger_Mode();
+        update_paired_triggerable_unit();
+    }
+    return 1;
 }

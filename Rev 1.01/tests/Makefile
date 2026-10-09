@@ -130,3 +130,13 @@ all: test_eeprom test_menu test_subroutines test_menu_navigation
 
 clean:
 	-del /f /q test_eeprom.exe test_menu_var.exe test_subroutines.exe test_menu_navigation.exe 2>nul
+
+# Production trigger pairing and nonblocking scan tests (hardware stand-ins).
+test_trigger_pairing.exe: ../CM4/Core/Src/Subroutines.c ../CM4/Core/Src/canNodeIds.c test_trigger_pairing.c
+	$(CC) $(CFLAGS) -funsigned-char -I../pc_side/stubs -I../CM4/Core/Inc -I../Drivers/EEPROM/Inc $(LDFLAGS) -o $@ $^
+
+test_trigger_pairing: test_trigger_pairing.exe
+	./test_trigger_pairing.exe
+
+all: test_trigger_pairing
+.PHONY: test_trigger_pairing

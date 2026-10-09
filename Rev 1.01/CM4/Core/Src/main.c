@@ -156,6 +156,7 @@ int main(void)
   Load_Camera_Add();
   Load_Serial_Num();
   Load_Variables();
+  Load_Trigger_Mode();
   
   camera_ON(false);
   /* USER CODE END 2 */
@@ -578,7 +579,8 @@ void InitVirtAddVarTab(void)
     VirtAddVarTab[6] = 0xABC7;
     VirtAddVarTab[7] = 0xABC8;
     VirtAddVarTab[8] = 0x1234; //Camera Virtual Address (CamVirtIndex = 8)
-    //leaving index 9-19 for potential expansion
+    VirtAddVarTab[9] = 0x1235; // versioned trigger-unit selection
+    //leaving index 10-19 for potential expansion
     for (uint16_t i = 20; i < NB_OF_VAR; i++)  //supports 20 max length menu variables (MenuVar1Index = 20)
     {
         VirtAddVarTab[i] = i;   

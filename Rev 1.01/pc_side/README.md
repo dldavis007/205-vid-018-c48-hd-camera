@@ -164,3 +164,20 @@ The workspace has a second C/C++ configuration, **PC_SIDE host**. Select it
 (`C/C++: Select a Configuration...`) when editing files under `pc_side/`, or
 the editor resolves `stm32h7xx_hal.h` to the real HAL and flags the stand-in
 types. The build itself is unaffected either way.
+
+## Trigger-unit pairing
+
+CAMERA SETTINGS now includes Trigger MODE: INSP, FBE, LIQUID, CLEAN, NONE
+(default NONE). FBE and LIQUID both address node 0x6E; LIQUID covers either
+liquid-coater variant. Confirming an edit saves it and broadcasts 0x321.
+A scan still sends the two existing 0x500 tag frames, then broadcasts 0x321.
+Scan delays no longer block the firmware main loop.
+
+Pairing payload: unit node ID, camera-address low/high bytes, camera type
+0x18, then four bytes of the selected unit label (zero padded as needed).
+The new setting uses versioned virtual address 0x1235 (table index 9),
+separate from the legacy menu stream, camera address and serial number.
+Absent/invalid records and Restore Defaults select NONE.
+
+Run `make test_trigger_pairing` in tests/ for the pairing/persistence/scan
+checks. Full Windows bench and STM32 target validation remain required.

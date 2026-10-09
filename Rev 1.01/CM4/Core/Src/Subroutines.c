@@ -20,6 +20,8 @@ char lastMicSetting[5];
 CAN_MSG gTxMsg;
 bool micChanged = false;
 bool camActive = false;
+static bool addr_tx_pending;
+static UNSIGNED32 addr_tx_time;
 
 extern uint32_t BootUpTimer;
 extern uint32_t Timer1;
@@ -68,6 +70,10 @@ struct menu_var Rev = {
 }; 
 
 
+
+/* Stored separately at virtual index 9: legacy menu token order stays intact. */
+const char enum_trig_str[] = "  INSP,   FBE,LIQUID, CLEAN,  NONE";
+struct menu_var TriggerMode = {5,1,1,5,0,6,"  NONE",enum_trig_str,NULL};
 
 //The following Menu Variables ARE saved via EEPROM emulation
 __attribute__((section(".menu_data"))) struct menu_var NullVar = {
@@ -135,8 +141,8 @@ struct MenuStruct const Menuc[MenuSize] = {
                                             "   CAMERA SETTINGS  ",
 											" TAG                ",
 											" MICROPHONE         ",
+											" Trigger MODE       ",
 											" EXIT               ",
-											"                    ",		
 											"                    ",
 											"                    ",
 											"                    ",
@@ -144,10 +150,10 @@ struct MenuStruct const Menuc[MenuSize] = {
 											"                    ",
 											"                    ",
 											"                    ",
-											9,17,0,0,0,0,0,0,0,0,0,
+											9,17,13,0,0,0,0,0,0,0,0,
                                             &CamTag,
                                             &MicOnOff,
-											&NullVar,
+											&TriggerMode,
                                             &NullVar,
                                             &NullVar,
                                             &NullVar,
@@ -158,8 +164,8 @@ struct MenuStruct const Menuc[MenuSize] = {
                                             &NullVar,
                                             &StdVarFunction,
 											&StdVarFunction,
-                                            &ExitMenu,
-											&NullFunction,
+                                            &update_paired_triggerable_unit_menu_wrapper,
+											&ExitMenu,
 											&NullFunction,
 											&NullFunction,
                                             &NullFunction,
@@ -379,11 +385,13 @@ void doevents(void)
     {
         gProcImg[OUT_digi_6] = 0x00;
 
-        // make delay proportional to camera address so cameras report in ascending order
-        Timer1 = cam_add / 100;
-        while (Timer1)
-            ;
+        addr_tx_time = MCOHW_GetTime() + cam_add / 100;
+        addr_tx_pending = true;
+    }
 
+    if (addr_tx_pending && MCOHW_IsTimeExpired(addr_tx_time))
+    {
+        addr_tx_pending = false;
         // transmit camera tag
         gTxMsg.ID = 0x500;
         gTxMsg.LEN = 8;
@@ -417,6 +425,7 @@ void doevents(void)
             // failed to transmit
             MCOUSER_FatalError(0x8801);
         }
+        update_paired_triggerable_unit();
     }
 
     if ((gProcImg[OUT_digi_6] & 0x04) &&                     // command to store address
@@ -523,4 +532,55 @@ void setOSD(enum OSDdir button)
         HAL_GPIO_WritePin(GPIOG, MUX_S0_Pin, GPIO_PIN_SET);
         break;
     }
+}
+can_unit_t trigger_menu_to_unit(void)
+{
+    switch ((int)TriggerMode.value) {
+    case 1: return CAN_UNIT_INSPECTION;
+    case 2: return CAN_UNIT_FBE_COATER;
+    case 3: return CAN_UNIT_LIQUID_COATER;
+    case 4: return CAN_UNIT_CLEANER;
+    default: return CAN_UNIT_NONE;
+    }
+}
+
+int update_paired_triggerable_unit(void)
+{
+    CAN_MSG message = {0};
+    getstrval(&TriggerMode);
+    message.ID = 0x321;
+    message.LEN = 8;
+    message.BUF[0] = can_node_id_for_unit(trigger_menu_to_unit());
+    message.BUF[1] = (uint8_t)cam_add;
+    message.BUF[2] = (uint8_t)(cam_add >> 8);
+    message.BUF[3] = 0x18;
+    strncpy((char *)&message.BUF[4],
+            TriggerMode.str_value + strspn(TriggerMode.str_value, " "), 4);
+    if (!MCOHW_PushMessage(&message)) {
+        MCOUSER_FatalError(0x8801);
+        return 0;
+    }
+    return 1;
+}
+
+void Save_Trigger_Mode(void)
+{
+    uint16_t value = 0xA500 | (uint16_t)TriggerMode.value;
+    uint16_t previous;
+    if (EE_ReadVariable(VirtAddVarTab[9], &previous) == 0 && previous == value)
+        return;
+    HAL_FLASH_Unlock();
+    if (EE_WriteVariable(VirtAddVarTab[9], value) == 0)
+        EEDataTable[9] = value;
+    HAL_FLASH_Lock();
+}
+
+void Load_Trigger_Mode(void)
+{
+    uint16_t value;
+    TriggerMode.value = 5;
+    if (EE_ReadVariable(VirtAddVarTab[9], &value) == 0 &&
+        (value & 0xFF00) == 0xA500 && (value & 0xFF) >= 1 && (value & 0xFF) <= 5)
+        TriggerMode.value = value & 0xFF;
+    getstrval(&TriggerMode);
 }

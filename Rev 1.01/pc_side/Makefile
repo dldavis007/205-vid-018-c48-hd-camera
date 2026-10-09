@@ -47,7 +47,7 @@ LIBS    := -lws2_32
 BUILD := build
 
 FW_OBJS   := $(BUILD)/fw_main.o $(BUILD)/stm32h7xx_it.o $(BUILD)/Subroutines.o \
-             $(BUILD)/MenuFunctions.o $(BUILD)/mco.o $(BUILD)/mcohw.o \
+             $(BUILD)/canNodeIds.o $(BUILD)/MenuFunctions.o $(BUILD)/mco.o $(BUILD)/mcohw.o \
              $(BUILD)/user.o $(BUILD)/eeprom.o
 HOST_OBJS := $(BUILD)/main.o $(BUILD)/pc_hal.o $(BUILD)/pc_side_host.o
 OBJS      := $(FW_OBJS) $(HOST_OBJS)

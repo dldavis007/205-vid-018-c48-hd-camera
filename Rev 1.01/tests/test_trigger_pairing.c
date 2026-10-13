@@ -38,15 +38,11 @@ int main(void){
  assert(count==1&&frames[0].ID==0x321&&frames[0].LEN==8);
  assert(frames[0].BUF[0]==nodes[i]&&frames[0].BUF[1]==0x34&&frames[0].BUF[2]==0x12&&frames[0].BUF[3]==0x18);
  assert(!memcmp(frames[0].BUF+4,tags[i],4));
- Save_Trigger_Mode();TriggerMode.value=5;Load_Trigger_Mode();assert(TriggerMode.value==i+1);
- int before=writes;Save_Trigger_Mode();assert(writes==before);
+
  }
- present=0;Load_Trigger_Mode();assert(TriggerMode.value==5);
- present=1;stored=0xa506;Load_Trigger_Mode();assert(TriggerMode.value==5);
- stored=0xffff;Load_Trigger_Mode();assert(TriggerMode.value==5);
  count=0;now=100;gProcImg[OUT_digi_6]=2;doevents();assert(count==0);
  now=145;doevents();assert(count==0);now=146;doevents();assert(count==3);
  assert(frames[0].ID==0x500&&frames[1].ID==0x500&&frames[1].BUF[7]==3&&frames[2].ID==0x321);
  doevents();assert(count==3);
- puts("PASS: five pairing payloads, settings restart/defaults/write suppression, nonblocking scan and legacy tag frames");return 0;
+ puts("PASS: five pairing payloads, nonblocking scan and legacy tag frames");return 0;
 }

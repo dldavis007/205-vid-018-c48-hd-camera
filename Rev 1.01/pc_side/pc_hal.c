@@ -434,11 +434,11 @@ HAL_StatusTypeDef HAL_FLASH_Lock(void)
  * the .menu_data globals stay contiguous and in declaration order.
  * Also makes the section writable: PE may map an unknown section read-only.
  * ========================================================================== */
-extern struct menu_var NullVar, CamTag, disp_add, MicOnOff, NullVar2;
+extern struct menu_var NullVar, CamTag, disp_add, MicOnOff, TriggerMode, NullVar2;
 
 int pc_menu_data_check(void)
 {
-    struct menu_var *const expect[] = {&NullVar, &CamTag, &disp_add, &MicOnOff, &NullVar2};
+    struct menu_var *const expect[] = {&NullVar, &CamTag, &disp_add, &MicOnOff, &TriggerMode, &NullVar2};
     size_t i;
     DWORD  old;
     SIZE_T span = (SIZE_T)((char *)&NullVar2 - (char *)&NullVar) + sizeof(struct menu_var);

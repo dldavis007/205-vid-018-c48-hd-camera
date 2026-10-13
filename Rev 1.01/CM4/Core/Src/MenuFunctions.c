@@ -1097,6 +1097,7 @@ void Load_Variables(void)
     char menu_vars[NB_OF_VAR] = {0}; 
     struct menu_var *var;
     size_t pos = 0;
+    int trigger_loaded = 0;
 
     uint16_t address = VirtAddVarTab[20];
     uint16_t current_value;
@@ -1132,6 +1133,10 @@ void Load_Variables(void)
 
     while (token && var_ptr <= (char *)&NullVar2.str_value)
     {
+        /* Old CSV ended here with the blank NullVar2 marker. */
+        if (var_ptr == (char *)&TriggerMode.str_value &&
+            strspn(token, " ") == strlen(token)) break;
+        if (var_ptr == (char *)&TriggerMode.str_value) trigger_loaded = 1;
         strncpy(var_ptr, token, STR_VALUE_LEN - 1);  
         ((char *)var_ptr)[STR_VALUE_LEN - 1] = '\0'; //Ensure null termination
 
@@ -1144,6 +1149,17 @@ void Load_Variables(void)
 	{
 	    getvalue(var, 0);
 	}
+
+    if (!trigger_loaded)
+    {
+        /* One-time compatibility read; all future writes use the CSV block. */
+        uint16_t legacy;
+        TriggerMode.value = 5;
+        if (EE_ReadVariable(VirtAddVarTab[9], &legacy) == 0 &&
+            (legacy & 0xFF00) == 0xA500 && (legacy & 0xFF) >= 1 && (legacy & 0xFF) <= 5)
+            TriggerMode.value = legacy & 0xFF;
+        getstrval(&TriggerMode);
+    }
 
     strncpy(&EE_CamTag[0], &CamTag.str_value[0], STR_VALUE_LEN - 1); 
 }
@@ -1194,7 +1210,6 @@ int RestoreDefaults(void)
     HAL_FLASH_Lock();
     TriggerMode.value = 5;
     getstrval(&TriggerMode);
-    Save_Trigger_Mode();
     ResetProc();
     return 0;
 }
@@ -1284,7 +1299,7 @@ int update_paired_triggerable_unit_menu_wrapper(void)
 {
     StdVarFunction();
     if (!Variable_flag) {
-        Save_Trigger_Mode();
+        Save_Variables();
         update_paired_triggerable_unit();
     }
     return 1;

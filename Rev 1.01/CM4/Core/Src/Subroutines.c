@@ -71,10 +71,6 @@ struct menu_var Rev = {
 
 
 
-/* Stored separately at virtual index 9: legacy menu token order stays intact. */
-const char enum_trig_str[] = "  INSP,   FBE,LIQUID, CLEAN,  NONE";
-struct menu_var TriggerMode = {5,1,1,5,0,6,"  NONE",enum_trig_str,NULL};
-
 //The following Menu Variables ARE saved via EEPROM emulation
 __attribute__((section(".menu_data"))) struct menu_var NullVar = {
     0,0,0,0,0,0," ",enum_NULL_str, NULL
@@ -92,6 +88,10 @@ __attribute__((section(".menu_data"))) struct menu_var MicOnOff = {
 	   2,1,1,2,0,3," ON",enum_off_on_str, NULL 
 }; 
 					   
+/* Menu settings use the legacy NullVar..NullVar2 block. */
+const char enum_trig_str[] = "  INSP,   FBE,LIQUID, CLEAN,  NONE";
+__attribute__((section(".menu_data"))) struct menu_var TriggerMode = {5,1,1,5,0,6,"  NONE",enum_trig_str,NULL};
+
 __attribute__((section(".menu_data"))) struct menu_var NullVar2 = {
 	   0,0,0,0,0,0," ",enum_NULL_str, NULL
 }; 
@@ -561,26 +561,4 @@ int update_paired_triggerable_unit(void)
         return 0;
     }
     return 1;
-}
-
-void Save_Trigger_Mode(void)
-{
-    uint16_t value = 0xA500 | (uint16_t)TriggerMode.value;
-    uint16_t previous;
-    if (EE_ReadVariable(VirtAddVarTab[9], &previous) == 0 && previous == value)
-        return;
-    HAL_FLASH_Unlock();
-    if (EE_WriteVariable(VirtAddVarTab[9], value) == 0)
-        EEDataTable[9] = value;
-    HAL_FLASH_Lock();
-}
-
-void Load_Trigger_Mode(void)
-{
-    uint16_t value;
-    TriggerMode.value = 5;
-    if (EE_ReadVariable(VirtAddVarTab[9], &value) == 0 &&
-        (value & 0xFF00) == 0xA500 && (value & 0xFF) >= 1 && (value & 0xFF) <= 5)
-        TriggerMode.value = value & 0xFF;
-    getstrval(&TriggerMode);
 }

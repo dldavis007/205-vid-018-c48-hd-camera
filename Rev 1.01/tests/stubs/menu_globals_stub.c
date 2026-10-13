@@ -58,6 +58,7 @@ struct menu_var NullVar  __attribute__((aligned(4))) = { 0,0,0,0,0,0," ",  s_enu
 struct menu_var CamTag   __attribute__((aligned(4))) = { 1,1,1,46,0,-11,"     HD CAM", s_enum_alpha, NULL };
 struct menu_var disp_add __attribute__((aligned(4))) = { 1,1,1,46,0,-4, "1234",        s_enum_alpha, NULL };
 struct menu_var MicOnOff __attribute__((aligned(4))) = { 2,1,1,2, 0,3,  " ON",         s_enum_off_on, NULL };
+struct menu_var TriggerMode __attribute__((aligned(4))) = {5,1,1,5,0,6,"  NONE","  INSP,   FBE,LIQUID, CLEAN,  NONE",NULL};
 struct menu_var NullVar2 __attribute__((aligned(4))) = { 0,0,0,0,0,0," ",  s_enum_NULL,  NULL };
 
 /* ---- Other menu variables (not EEPROM-backed) ------------------------- */

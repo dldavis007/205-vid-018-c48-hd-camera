@@ -44,6 +44,7 @@ extern struct menu_var CamTag;
 extern struct menu_var disp_add;
 extern struct menu_var MicOnOff;
 extern struct menu_var SerialNum;
+extern struct menu_var TriggerMode;
 
 extern uint16_t VirtAddVarTab[NB_OF_VAR];
 extern uint16_t EEDataTable[NB_OF_VAR];
@@ -67,6 +68,8 @@ void setUp(void)
     strncpy(disp_add.str_value, "1234",         STR_VALUE_LEN - 1);
     strncpy(MicOnOff.str_value, " ON",          STR_VALUE_LEN - 1);
     MicOnOff.value = 2.0f;
+    TriggerMode.value = 5;
+    strcpy(TriggerMode.str_value, "  NONE");
     strncpy(NullVar2.str_value, " ",           STR_VALUE_LEN - 1);
 
     memset(SerialNum.str_value, '-', 7);
@@ -160,8 +163,9 @@ void test_save_serial_num_skips_when_already_set(void)
 void test_even_length_csv_has_terminator(void)
 {
     uint16_t value;
+    strcpy(TriggerMode.str_value, " NONE");
     Save_Variables();
-    TEST_ASSERT_EQUAL_INT(0, EE_ReadVariable(VirtAddVarTab[32], &value));
+    TEST_ASSERT_EQUAL_INT(0, EE_ReadVariable(VirtAddVarTab[35], &value));
     TEST_ASSERT_EQUAL_HEX16(0, value);
 }
 
@@ -187,6 +191,41 @@ void test_unterminated_eeprom_is_bounded(void)
     TEST_ASSERT_EQUAL_STRING("     HD CAM", CamTag.str_value);
 }
 
+void test_trigger_mode_uses_legacy_csv(void)
+{
+    TriggerMode.value = 2;
+    getstrval(&TriggerMode);
+    Save_Variables();
+    TriggerMode.value = 5;
+    getstrval(&TriggerMode);
+    Load_Variables();
+    TEST_ASSERT_EQUAL_FLOAT(2, TriggerMode.value);
+}
+
+void test_old_csv_imports_separate_trigger_setting(void)
+{
+    const char old_csv[] = " ,     HD CAM,1234, ON, ";
+    HAL_FLASH_Unlock();
+    EE_WriteVariable(VirtAddVarTab[9], 0xA502);
+    for (unsigned i = 0; i < sizeof old_csv; i += 2) {
+        uint16_t value = (unsigned char)old_csv[i];
+        if (i + 1 < sizeof old_csv) value |= (uint16_t)(unsigned char)old_csv[i + 1] << 8;
+        EE_WriteVariable(VirtAddVarTab[20 + i / 2], value);
+    }
+    HAL_FLASH_Lock();
+    Load_Variables();
+    TEST_ASSERT_EQUAL_FLOAT(2, TriggerMode.value);
+    TEST_ASSERT_EQUAL_STRING(" ON", MicOnOff.str_value);
+    Save_Variables();
+    HAL_FLASH_Unlock();
+    EE_WriteVariable(VirtAddVarTab[9], 0xA504);
+    HAL_FLASH_Lock();
+    TriggerMode.value = 5;
+    getstrval(&TriggerMode);
+    Load_Variables();
+    TEST_ASSERT_EQUAL_FLOAT(2, TriggerMode.value);
+}
+
 /* ================================================================= */
 int main(void)
 {
@@ -198,5 +237,7 @@ int main(void)
     RUN_TEST(test_even_length_csv_has_terminator);
     RUN_TEST(test_shorter_csv_does_not_load_stale_tail);
     RUN_TEST(test_unterminated_eeprom_is_bounded);
+    RUN_TEST(test_trigger_mode_uses_legacy_csv);
+    RUN_TEST(test_old_csv_imports_separate_trigger_setting);
     return UNITY_END();
 }

@@ -5,15 +5,18 @@ pre-migration commit `cb80077`. This review changes none of them. VID-19 was
 not modified.
 
 The original saved-variable block remains contiguous and in declaration order:
-`NullVar`, `CamTag`, `disp_add`, `MicOnOff`, `NullVar2`. Save/load continue walking
+`NullVar`, `CamTag`, `disp_add`, `MicOnOff`, `TriggerMode`, `NullVar2`. Save/load continue walking
 from the beginning variable to the ending variable. Although `disp_add` displays
 the separately stored camera address, it keeps its legacy CSV position to avoid
 shifting existing settings. New legacy settings belong before `NullVar2`.
 
-`TriggerMode` is intentionally outside that block. It is already stored and
-loaded separately at virtual index 9 with a version signature. Its five choices
-and enum values are unchanged. PC flash persistence remains in
-`flash_<receive-port>.bin` in the host's working folder.
+`TriggerMode` now uses the same legacy save/load loop as the other menu settings.
+Its separate write function and startup load call have been removed. Older CSV
+records are recognized by their trailing blank marker; the old virtual-index-9
+record is read only to import an existing trigger selection. Once the new CSV
+is saved, the CSV selection takes precedence and index 9 is no longer written.
+The five choices and enum values are unchanged.
+PC flash persistence remains in `flash_<receive-port>.bin` in the host's working folder.
 
 ## Fixes
 
@@ -27,7 +30,7 @@ and enum values are unchanged. PC flash persistence remains in
 
 The EEPROM addresses, token order and word packing remain compatible. Tests were
 added for the even-length terminator, shorter replacement data and unterminated
-EEPROM. Together with the four existing settings tests, all seven pass against
+EEPROM. Together with the existing settings and trigger migration tests, all nine pass against
 the production menu code with a native GCC EEPROM dictionary stand-in.
 
 The environment lacks 32-bit C libraries, so the normal `-m32` test build and

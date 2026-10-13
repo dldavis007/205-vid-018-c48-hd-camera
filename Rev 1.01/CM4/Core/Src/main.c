@@ -156,7 +156,6 @@ int main(void)
   Load_Camera_Add();
   Load_Serial_Num();
   Load_Variables();
-  Load_Trigger_Mode();
   
   camera_ON(false);
   /* USER CODE END 2 */

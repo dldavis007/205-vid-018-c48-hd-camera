@@ -150,7 +150,7 @@ struct MenuStruct const Menuc[MenuSize] = {
 											"                    ",
 											"                    ",
 											"                    ",
-											9,17,13,0,0,0,0,0,0,0,0,
+											9,17,14,0,0,0,0,0,0,0,0,
                                             &CamTag,
                                             &MicOnOff,
 											&TriggerMode,

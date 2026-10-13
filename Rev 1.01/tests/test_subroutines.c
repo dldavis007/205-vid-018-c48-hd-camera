@@ -156,6 +156,37 @@ void test_save_serial_num_skips_when_already_set(void)
     TEST_ASSERT_EQUAL_INT('5', EEDataTable[SerNum1VirtIndex]);
 }
 
+/* A 24-character default CSV must still write its null terminator. */
+void test_even_length_csv_has_terminator(void)
+{
+    uint16_t value;
+    Save_Variables();
+    TEST_ASSERT_EQUAL_INT(0, EE_ReadVariable(VirtAddVarTab[32], &value));
+    TEST_ASSERT_EQUAL_HEX16(0, value);
+}
+
+void test_shorter_csv_does_not_load_stale_tail(void)
+{
+    Save_Variables();
+    strcpy(CamTag.str_value, "A");
+    Save_Variables();
+    strcpy(CamTag.str_value, "CORRUPT");
+    Load_Variables();
+    TEST_ASSERT_EQUAL_STRING("A", CamTag.str_value);
+    TEST_ASSERT_EQUAL_STRING(" ON", MicOnOff.str_value);
+    TEST_ASSERT_EQUAL_STRING(" ", NullVar2.str_value);
+}
+
+void test_unterminated_eeprom_is_bounded(void)
+{
+    HAL_FLASH_Unlock();
+    for (unsigned i = 20; i < NB_OF_VAR; ++i)
+        TEST_ASSERT_EQUAL_INT(0, EE_WriteVariable(VirtAddVarTab[i], 0x4141));
+    HAL_FLASH_Lock();
+    Load_Variables();
+    TEST_ASSERT_EQUAL_STRING("     HD CAM", CamTag.str_value);
+}
+
 /* ================================================================= */
 int main(void)
 {
@@ -164,5 +195,8 @@ int main(void)
     RUN_TEST(test_save_load_variables_nullvar);
     RUN_TEST(test_save_load_serial_num_round_trip);
     RUN_TEST(test_save_serial_num_skips_when_already_set);
+    RUN_TEST(test_even_length_csv_has_terminator);
+    RUN_TEST(test_shorter_csv_does_not_load_stale_tail);
+    RUN_TEST(test_unterminated_eeprom_is_bounded);
     return UNITY_END();
 }

@@ -141,7 +141,7 @@ struct MenuStruct const Menuc[MenuSize] = {
                                             "   CAMERA SETTINGS  ",
 											" TAG                ",
 											" MICROPHONE         ",
-											" Trigger MODE       ",
+											" TRIGGER            ",
 											" EXIT               ",
 											"                    ",
 											"                    ",

@@ -1041,20 +1041,21 @@ void Save_Variables(void)
     char tempstr[NB_OF_VAR] = {0};
     uint16_t virt_address_index = 20; //Starting virtual address index for menu variables
 
-    for (char *cptr = (char *)&NullVar.str_value; cptr <= (char *)&NullVar2.str_value; cptr += sizeof(struct menu_var))
+    for (struct menu_var *var = &NullVar; var <= &NullVar2; ++var)
     {
-        if (strlen(cptr) == 0)
-            continue;
-
-        if ((offset + strlen(cptr) + 1) < NB_OF_VAR)
-            sprintf(tempstr + offset, "%s,", cptr);
-        else
-            *(tempstr + offset - 1) = 0;
-
-        offset = offset + strlen(cptr) + 1;
+        size_t len = 0;
+        while (len < STR_VALUE_LEN && var->str_value[len]) ++len;
+        if (!len || len == STR_VALUE_LEN || offset + len + 1 >= sizeof tempstr)
+        {
+            printf("Invalid or oversized menu settings; EEPROM unchanged\r\n");
+            return;
+        }
+        memcpy(tempstr + offset, var->str_value, len);
+        offset += len;
+        tempstr[offset++] = ',';
     }
-    offset -= 1;
-    *(tempstr + offset) = 0;
+    tempstr[offset - 1] = 0;
+    /* offset includes the terminator, even when the string length is even. */
 
     //Write to EEPROM
     HAL_FLASH_Unlock();
@@ -1064,8 +1065,6 @@ void Save_Variables(void)
 
         if (i + 1 < offset)
             packed |= ((uint16_t)(uint8_t)tempstr[i + 1]) << 8;
-        else
-            packed |= ((uint16_t)'\0') << 8;
 
         uint16_t address = VirtAddVarTab[virt_address_index];
         uint16_t current_value;
@@ -1118,15 +1117,14 @@ void Load_Variables(void)
       
         EEDataTable[virt_address_index] = val;
 
-        //Unpack lower and upper bytes
+        // Reserve space for a terminating null even with malformed EEPROM.
+        if (pos + 2 > sizeof menu_vars) return;
         menu_vars[pos++] = (char)(val & 0xFF);
-        if ((val >> 8) != 0)
-            menu_vars[pos++] = (char)(val >> 8);
-
-        //Stop if null terminator is found
-        if ((val & 0xFF) == '\0' || (val >> 8) == '\0')
-            break;
+        if ((val & 0xFF) == 0) break;
+        menu_vars[pos++] = (char)(val >> 8);
+        if ((val >> 8) == 0) break;
     }
+    if (pos == sizeof menu_vars && menu_vars[pos - 1] != 0) return;
 
     //Tokenize and assign back to menu structs
     char *token = strtok(menu_vars, ",");
